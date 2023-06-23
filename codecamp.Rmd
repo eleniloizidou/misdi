@@ -1,0 +1,168 @@
+---
+title: "Final_Project_MISDI_Codecamp"
+author: "Eleni"
+date: "2023-06-22"
+output: html_document
+---
+
+```{r}
+
+# load libraries (quietly stops all the messages appearing)
+library(readr, quietly = TRUE)
+library(dplyr, quietly = TRUE)
+library(ggplot2)
+library(DT, quietly = TRUE)
+
+# load imdb and bechdel
+movies_imdb <- read_csv("https://raw.githubusercontent.com/andrewmoles2/rTrainIntroduction/main/r-data-wrangling-1/data/IMDb%20movies.csv")
+
+bechdel <- read_csv("https://raw.githubusercontent.com/andrewmoles2/rTrainIntroduction/main/r-data-wrangling-1/data/raw_bechdel.csv")
+
+# fix imdb id key
+movies_imdb$imdb_title_id <- parse_number(movies_imdb$imdb_title_id)
+
+# join data (left join)
+imdb_bechdel <- left_join(x = movies_imdb, y = bechdel,
+                          by = c("imdb_title_id" = "imdb_id", "year", "title"))
+
+imdb_bechdel
+
+Country1 <- imdb_bechdel %>% filter(genre %in% c("Comedy", "Drama","Thriller","Horror", "Mystery","Biography"))
+Country1
+
+Country1 %>%
+  count(genre, sort = TRUE)
+
+Country_plot <- ggplot(Country1, aes(x=year, y=genre )) +
+  geom_hex(aes(x=year, y=genre)) +
+  labs(title= "Genres Across Countries Throughout The Years") + 
+  theme_minimal(base_size = 12)
+
+Country_plot
+```
+
+                                                                                                
+
+
+```{r}
+
+# total movies by country- which country makes the most movies?
+
+# Load the dplyr package
+library(dplyr)
+
+# Group the data by 'country' and calculate the count of movies per country
+movie_counts <- imdb_bechdel %>%
+  group_by(country) %>%
+  summarize(total_count = n())
+
+movie_counts
+
+# Print the result
+print(movie_counts)
+```
+
+```{r}
+
+# Load the ggplot2 library
+library(ggplot2)
+
+
+# creating a graph to see budget and voting for 150 movies
+
+filtered <- head(imdb_bechdel, 50)
+filtered_data <- imdb_bechdel[1:150,]
+
+filtered$budget_clean <- parse_number(filtered$budget)
+
+# Create a scatter plot
+
+ggplot(filtered, aes(x = avg_vote, y = budget_clean )) +
+  geom_point(colour = "#A782C1") +
+  labs(title = "Scatter Plot of average vote vs budget",
+       x = "avg_vote",
+       y = "budget") +
+  theme_light() +
+  scale_y_continuous(labels = scales::comma)
+
+column_data_type <- class(imbd_bechdel$budget)
+print(column_data_type)
+
+# Change a column's data type to numeric
+imbd_bechdel$budget <- as.numeric(imbd_bechdel$budget)
+imdb_bechdel
+```
+
+# Libraries
+library(tidyverse)
+library(hrbrthemes)
+library(plotly)
+library(patchwork)
+library(babynames)
+library(viridis)
+
+# Load dataset from github
+data <- read.table("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered.csv", header=T)
+data$date <- as.Date(data$date)
+
+# plot
+data %>%
+  ggplot( aes(x=date, y=value)) +
+    geom_area(fill="#69b3a2", alpha=0.5) +
+    geom_line(color="#69b3a2") +
+    ggtitle("Evolution of Bitcoin price") +
+    ylab("bitcoin price ($)") +
+    theme_ipsum()
+#  count per type of movie for specific movie categories 
+
+newdataset <- imdb_bechdel %>% filter(genre %in% c("Comedy", "Drama","Thriller","Horror", "Mystery","Biography"))
+newdataset
+
+
+movie_counts <- newdataset %>%
+  group_by(genre) %>%
+  summarize(total_count = n())
+
+movie_counts
+
+# Load the dplyr library
+library(dplyr)
+
+# Group the dataset by genre and calculate the average budget per genre
+genre_avg_budget <- newdataset %>%
+  group_by(genre) %>%
+  summarize(budget = mean(budget))
+
+# View the resulting grouped dataset
+genre_avg_budget
+
+
+# Load the ggplot2 library
+library(ggplot2)
+
+# Create a circular barchart with a light color palette
+ggplot(data = movie_counts, aes(x = "", y = total_count, fill = genre)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(title = "Pie chart of Movie Counts by Genre",
+       x = NULL, y = NULL) +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_void()
+  
+  #  lollipop
+  
+  # Create a lollipop graph with a light color palette
+ggplot(data = movie_counts, aes(x = genre, y = total_count, fill = genre)) +
+  geom_segment(aes(x = genre, xend = genre, y = 0, yend = total_count), color = "gray50") +
+  geom_point(color = "steelblue", size = 3, shape = 21, fill = "white") +
+  labs(title = "Lollipop Graph of Movie Counts by Genre",
+       x = "Genre", y = "Count") +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+
